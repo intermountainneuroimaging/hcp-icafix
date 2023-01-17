@@ -61,13 +61,12 @@ RUN rm -rf /tmp/downloaded_packages/ /tmp/*.rds \
 # CUSTOM ADD: add additional software packages (needed for R install)
 RUN apt update \
     &&  apt-get install -y --no-install-recommends openssl libssl-dev \
-    &&  apt install -y --no-install-recommends build-essential libcurl4-gnutls-dev libxml2-dev libssl-dev
+    &&  apt install -y --no-install-recommends build-essential libcurl4-gnutls-dev libxml2-dev libssl-dev 
 
 RUN apt update \
     && apt-get install -y libfontconfig1-dev \
     && apt-get install -y libharfbuzz-dev libfribidi-dev \
     && apt-get install -y libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
-
 
 #############################################
 # CUSTOM ADD: add R packages for fix
@@ -173,9 +172,17 @@ RUN mv /opt/mcr/v93/bin/glnxa64/libmwcoder_types.so /opt/mcr/v93/bin/glnxa64/lib
 #ENV LD_LIBRARY_PATH /opt/mcr/v93/runtime/glnxa64:/opt/mcr/v93/bin/glnxa64:/opt/mcr/v93/sys/os/glnxa64 # skip this
 ENV XAPPLRESDIR /opt/mcr/v93/X11/app-defaults
 #
-#
+# Set up specific environment variables for the HCP Pipeline
+ENV FSL_DIR="${FSLDIR}"
+ENV HCPPIPEDIR=/opt/HCP-Pipelines
+ENV MSMBINDIR=${HCPPIPEDIR}/MSMBinaries
+ENV MSMCONFIGDIR=${HCPPIPEDIR}/MSMConfig
+#ENV MATLAB_COMPILER_RUNTIME=/opt/mcr/v93
+#ENV FSL_FIXDIR=/opt/fix
+
 ######################################################
 # FLYWHEEL GEAR STUFF...
+RUN apt-get install --reinstall ca-certificates
 
 # Add poetry oversight.
 RUN apt-get update &&\
@@ -207,83 +214,3 @@ ENV PATH="$POETRY_HOME/bin:$PATH"
 
 # get-poetry respects ENV
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
-
-# Installing main dependencies
-ARG FLYWHEEL=/flywheel/v0
-COPY pyproject.toml poetry.lock $FLYWHEEL/
-RUN poetry install --no-root --no-dev
-
-## Installing the current project (most likely to change, above layer can be cached)
-## Note: poetry requires a README.md to install the current project
-COPY run.py manifest.json README.md $FLYWHEEL/
-COPY fw_gear_icafix $FLYWHEEL/fw_gear_icafix
-COPY utils $FLYWHEEL/utils
-
-# Configure entrypoint
-RUN chmod a+x $FLYWHEEL/run.py && \
-    echo "hcp-icafix" > /etc/hostname && \
-    rm -rf $HOME/.npm
-
-ENTRYPOINT ["poetry","run","python","/flywheel/v0/run.py"]
-
-
-#####################################################
-#   v---OLD---v
-#
-## Make directory for flywheel spec (v0)
-#ENV FLYWHEEL /flywheel/v0
-#WORKDIR ${FLYWHEEL}
-#
-## Install gear dependencies
-#COPY requirements.txt ${FLYWHEEL}/requirements.txt
-#RUN apt-get install -y --no-install-recommends \
-#    gawk \
-#    python3-pip \
-#    zip \
-#    unzip \
-#    gzip && \
-#    pip3 install --upgrade pip && \
-#    apt-get remove -y python3-urllib3 && \
-#    pip3.5 install -r requirements.txt && \
-#    rm -rf /root/.cache/pip && \
-#    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-#
-## Copy executable/manifest to Gear
-#COPY run.py ${FLYWHEEL}/run.py
-#COPY utils ${FLYWHEEL}/utils
-#COPY manifest.json ${FLYWHEEL}/manifest.json
-#
-#
-## Set up directories for HCP fix
-#RUN mkdir -p /opt/fmrib/MATLAB
-#RUN ln -s /opt/mcr /opt/fmrib/MATLAB/MATLAB_Compiler_Runtime
-#RUN ln -s /usr/share/fsl/6.0 /opt/fmrib/fsl
-#
-#ENV HCP_DIR=/flywheel/v0/hcp_dir
-#ENV SCRIPT_DIR=/flywheel/v0/scripts/scripts
-#ENV SCENE_DIR=/flywheel/v0/scripts/PostFixScenes
-#ENV HCP_PIPELINE_DIR=/opt/HCP-Pipelines
-#
-#ENV MATLAB_COMPILER_RUNTIME=/opt/mcr/v93
-#ENV FSL_FIX_MATLAB=/opt/mcr/v93
-#ENV FSL_FIX_MATLAB_MODE=0
-#ENV FSL_FIX_MCRROOT=/opt/mcr
-#ENV FSL_FIX_MCR=/opt/mcr/v93
-#ENV FSL_FIX_MCRV=v93
-#    # Set up HCP environment variables
-#ENV DEFAULT_ENVIRONMENT_SCRIPT=/flywheel/v0/scripts/SetUpHCPPipeline.sh
-#ENV DEFAULT_RUN_LOCAL=TRUE
-#ENV DEFAULT_FIXDIR=/opt/fix
-#
-#ENV FSL_FIX_WBC=/opt/workbench/bin_linux64/wb_command
-#ENV FSL_FIX_R_CMD=/usr/bin/R
-#
-## ENV preservation for Flywheel Engine
-#ENV PATH=$PATH:$CARET7DIR
-#RUN python -c 'import os, json; f = open("/tmp/gear_environ.json", "w"); json.dump(dict(os.environ), f)'
-#
-##ENV LD_LIBRARY_PATH=/opt/mcr/v93/runtime/glnxa64:/opt/mcr/v93/bin/glnxa64:/opt/mcr/v93/sys/os/glnxa64:/opt/mcr/v93/extern/bin/glnxa64
-#
-#
-## Configure entrypoint
-#ENTRYPOINT ["/flywheel/v0/run.py"]

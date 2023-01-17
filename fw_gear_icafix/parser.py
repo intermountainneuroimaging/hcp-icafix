@@ -42,8 +42,8 @@ class GearArgs:
         }
         self.config = gtk_context.config
         self.gtk_context = gtk_context
-        self.work_dir = Path("/flywheel/v0/work")
-        self.outputs_dir = Path("/flywheel/v0/output")
+        self.work_dir = gtk_context.work_dir
+        self.output_dir = gtk_context.output_dir
 
         # unzip HCPpipeline files
         self.unzip_hcp(self.hcpstruct_zipfile)
