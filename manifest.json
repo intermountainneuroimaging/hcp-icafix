@@ -1,17 +1,17 @@
 {
   "name": "hcp-icafix",
   "label": "HCP: ICAFIX Functional Pipeline",
-  "description": "Runs ICA-FIX denoising on functional data preprocessed according to the HCP Minimal Preprocessing Pipeline. This Gear is based on scripts from the v4.0-alpha release of the ICAFIX, PostFix, and RestingStateStats pipelines. NOTE: This Gear requires that HCP-STRUCT and HCP-FUNC Gears have been run, as the outputs of those gears are required inputs here. Also note that more than 1 HCP-FUNC output can be provided as input.",
+  "description": "(HPC Compatible) Runs ICA-FIX denoising on functional data preprocessed according to the HCP Minimal Preprocessing Pipeline. This Gear is based on scripts from the v4.0-alpha release of the ICAFIX, PostFix, and RestingStateStats pipelines. NOTE: This Gear requires that HCP-STRUCT and HCP-FUNC Gears have been run, as the outputs of those gears are required inputs here. Also note that more than 1 HCP-FUNC output can be provided as input.",
   "author": "FMRIB Software Library (FIX wrapper published by Human Connectome Project) ",
   "maintainer": "Amy Hegarty <amhe4269@colorado.edu>",
   "license": "Other",
   "url": "https://github.com/Washington-University/Pipelines",
   "source": "https://github.com/intermountainneuroimaging/hcp-icafix",
   "cite": "(1) G. Salimi-Khorshidi, G. Douaud, C.F. Beckmann, M.F. Glasser, L. Griffanti S.M. Smith. Automatic denoising of functional MRI data: Combining independent component analysis and hierarchical fusion of classifiers. NeuroImage, 90:449-68, 2014 (2) L. Griffanti, G. Salimi-Khorshidi, C.F. Beckmann, E.J. Auerbach, G. Douaud, C.E. Sexton, E. Zsoldos, K. Ebmeier, N. Filippini, C.E. Mackay, S. Moeller, J.G. Xu, E. Yacoub, G. Baselli, K. Ugurbil, K.L. Miller, and S.M. Smith. ICA-based artefact removal and accelerated fMRI acquisition for improved resting state network imaging. NeuroImage, 95:232-47, 2014",
-  "version": "1.06.15_inc1.1",
+  "version": "1.06.15_inc1.2",
   "custom": {
     "gear-builder": {
-      "image": "amhe4269/hcp-icafix:1.06.15_inc1.1",
+      "image": "amhe4269/hcp-icafix:1.06.15_inc1.2",
       "category": "analysis"
     },
       "flywheel": {
@@ -20,59 +20,103 @@
   },
   "config": {
      "gear-log-level": {
-      "default": "INFO",
-      "description": "Gear Log verbosity level (ERROR|WARNING|INFO|DEBUG)",
-      "type": "string",
-      "enum": [
-        "ERROR",
-        "WARNING",
-        "INFO",
-        "DEBUG"
-      ]
-    },
+        "default": "INFO",
+        "description": "Gear Log verbosity level (ERROR|WARNING|INFO|DEBUG)",
+        "type": "string",
+        "enum": [
+          "ERROR",
+          "WARNING",
+          "INFO",
+          "DEBUG"
+        ]
+      },
+      "TrainingFile": {
+        "type": "string",
+        "default": "HCP_hp2000.RData",
+        "enum": ["HCP_hp2000.RData",
+                "HCP7T_hp2000.RData",
+                "HCP_Style_Single_Multirun_Dedrift.RData",
+                "NHPHCP_Macaque_RIKEN30SRFIX.RData",
+                "Standard.RData",
+                "Standard_old.Rdata",
+                "UKBiobank.RData",
+                "WhII_MB6.RData",
+                "WhII_Standard.RData"],
+        "description": "Name of FIX training file to use for classification. 'Standard', 'HCP_hp2000', 'HCP7T_hp2000', 'WhII_MB6', 'WhII_Standard', 'UKBiobank'. See https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FIX/UserGuide#Trained-weights_files for details."
+      },
 
-    "TrainingFile": {
-      "type": "string",
-      "default": "HCP_hp2000.RData",
-      "enum": ["HCP_hp2000.RData", 
-              "HCP7T_hp2000.RData",
-              "HCP_Style_Single_Multirun_Dedrift.RData",
-              "NHPHCP_Macaque_RIKEN30SRFIX.RData",
-              "Standard.RData",
-              "Standard_old.Rdata",
-              "UKBiobank.RData",
-              "WhII_MB6.RData",
-              "WhII_Standard.RData"],
-      "description": "Name of FIX training file to use for classification. 'Standard', 'HCP_hp2000', 'HCP7T_hp2000', 'WhII_MB6', 'WhII_Standard', 'UKBiobank'. See https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FIX/UserGuide#Trained-weights_files for details."
-    },
-    
-    "do_motion_regression": {
-      "type": "boolean",
-      "default": false,
-      "description": "set whether or not to regress motion parameters (24 regressors) out of the data as part of FIX (TRUE or FALSE)"
-    },
-    "HighPassFilter": {
-      "type": "integer",
-      "default": 2000, 
-      "minimum": 1,
-      "maximum": 9999,
-      "description": "set temporal highpass full-width (2*sigma) to use, in seconds, cannot be 0 for single-run FIX.  For detrending-like behaviour, set <highpass> to 2000"
-    },
-    "FixThreshold": {
-      "type": "integer",
-      "default": 10,
-      "description": "set FIX threshold (controls sensitivity/specificity tradeoff)"
-    },
-    "DeleteIntermediates": {
-      "type": "boolean",
-      "default": false,
-      "description": "delete highpass files (note that delete intermediates=TRUE is not recommended for MR+FIX)"
-    },
-    "dry-run": {
-        "type":"boolean",
+      "do_motion_regression": {
+        "type": "boolean",
         "default": false,
-        "description": "Log all commands, but do not execute."
-    }
+        "description": "set whether or not to regress motion parameters (24 regressors) out of the data as part of FIX (TRUE or FALSE)"
+      },
+      "HighPassFilter": {
+        "type": "integer",
+        "default": 2000,
+        "minimum": 1,
+        "maximum": 9999,
+        "description": "set temporal highpass full-width (2*sigma) to use, in seconds, cannot be 0 for single-run FIX.  For detrending-like behaviour, set <highpass> to 2000"
+      },
+      "FixThreshold": {
+        "type": "integer",
+        "default": 10,
+        "description": "set FIX threshold (controls sensitivity/specificity tradeoff)"
+      },
+      "DeleteIntermediates": {
+        "type": "boolean",
+        "default": false,
+        "description": "delete highpass files (note that delete intermediates=TRUE is not recommended for MR+FIX)"
+      },
+      "dry-run": {
+          "type":"boolean",
+          "default": false,
+          "description": "Log all commands, but do not execute."
+      },
+      "gear-writable-dir": {
+          "default": "/pl/active/ics/fw_temp_data",
+          "description": "Gears expect to be able to write temporary files in /flywheel/v0/.  If this location is not writable (such as when running in Singularity), this path will be used instead.  fMRIPrep creates a large number of files so this disk space should be fast and local.",
+          "type": "string"
+      },
+      "slurm-cpu": {
+          "default": "1",
+          "description": "[SLURM] How many cpu-cores to request per command/task. This is used for the underlying '--cpus-per-task' option. If not running on HPC, then this flag is ignored",
+          "type": "string"
+      },
+      "slurm-ram": {
+          "default": "12G",
+          "description": "[SLURM] How much RAM to request. This is used for the underlying '--mem-per-cpu' option. If not running on HPC, then this flag is ignored",
+          "type": "string"
+      },
+      "slurm-ntasks": {
+          "default": "1",
+          "description": "[SLURM] Total number of tasks/commands across all nodes (not equivalent to neuroimaging tasks). Using a value greater than 1 for code that has not been parallelized will not improve performance (and may break things).",
+          "type": "string"
+      },
+      "slurm-nodes": {
+          "default": "1",
+          "description": "[SLURM] How many HPC nodes to run on",
+          "type": "string"
+      },
+      "slurm-partition": {
+          "default": "blanca-ics",
+          "description": "[SLURM] Blanca, Alpine, or Summit partitions can be entered",
+          "type": "string"
+      },
+      "slurm-qos": {
+          "default": "blanca-ics",
+          "description": "[SLURM] For Blanca the QOS has a different meaning, ie blanca-ics vs blanca-ibg, etc. For Alpine and Summit, the QOS should be set to normal if running a job for 1 day or less, and set to long if running a job with a maximum walltime of 7 days",
+          "type": "string"
+      },
+      "slurm-account": {
+          "default": "blanca-ics",
+          "description": "[SLURM] For Blanca the ACCOUNT should be set to the sub-account of choice (e.g. blanca-ics-rray). For Alpine, the account should be set to ucb-general, or the specialized account granted by RC: ucb278_asc1",
+          "type": "string"
+      },
+      "slurm-time": {
+        "default": "1428",
+        "description": "[SLURM] Maximum walltime requested after which your job will be cancelled if it hasn't finished. Default to 1 day",
+        "type": "string"
+      }
   },
   "inputs": {
     "api-key": {

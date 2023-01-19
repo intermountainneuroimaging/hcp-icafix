@@ -63,6 +63,12 @@ RUN apt update \
     &&  apt-get install -y --no-install-recommends openssl libssl-dev \
     &&  apt install -y --no-install-recommends build-essential libcurl4-gnutls-dev libxml2-dev libssl-dev
 
+RUN apt update \
+    && apt-get install -y libfontconfig1-dev \
+    && apt-get install -y libharfbuzz-dev libfribidi-dev \
+    && apt-get install -y libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
+
+
 #############################################
 # CUSTOM ADD: add R packages for fix
 
@@ -211,6 +217,7 @@ RUN poetry install --no-root --no-dev
 ## Note: poetry requires a README.md to install the current project
 COPY run.py manifest.json README.md $FLYWHEEL/
 COPY fw_gear_icafix $FLYWHEEL/fw_gear_icafix
+COPY utils $FLYWHEEL/utils
 
 # Configure entrypoint
 RUN chmod a+x $FLYWHEEL/run.py && \

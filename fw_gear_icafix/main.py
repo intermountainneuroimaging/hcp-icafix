@@ -158,7 +158,7 @@ def cleanup(gear_args: GearToolkitContext):
 
     # zip output files
     os.chdir(gear_args.work_dir)
-    output_zipname = gear_args.outputs_dir.absolute().as_posix() + "/hcpfix_results.zip"
+    output_zipname = gear_args.output_dir.absolute().as_posix() + "/hcpfix_results.zip"
     outzip = ZipFile(output_zipname, "w", ZIP_DEFLATED)
 
     for fl in outfiles:
@@ -173,7 +173,7 @@ def cleanup(gear_args: GearToolkitContext):
     outzip.close()
 
     # log final results size
-    os.chdir(gear_args.outputs_dir)
+    os.chdir(gear_args.output_dir)
     duResults = sp.Popen(
         "du -hs *", shell=True, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True
     )
