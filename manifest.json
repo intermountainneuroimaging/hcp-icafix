@@ -8,10 +8,10 @@
   "url": "https://github.com/Washington-University/Pipelines",
   "source": "https://github.com/intermountainneuroimaging/hcp-icafix",
   "cite": "(1) G. Salimi-Khorshidi, G. Douaud, C.F. Beckmann, M.F. Glasser, L. Griffanti S.M. Smith. Automatic denoising of functional MRI data: Combining independent component analysis and hierarchical fusion of classifiers. NeuroImage, 90:449-68, 2014 (2) L. Griffanti, G. Salimi-Khorshidi, C.F. Beckmann, E.J. Auerbach, G. Douaud, C.E. Sexton, E. Zsoldos, K. Ebmeier, N. Filippini, C.E. Mackay, S. Moeller, J.G. Xu, E. Yacoub, G. Baselli, K. Ugurbil, K.L. Miller, and S.M. Smith. ICA-based artefact removal and accelerated fMRI acquisition for improved resting state network imaging. NeuroImage, 95:232-47, 2014",
-  "version": "1.06.15_inc1.2",
+  "version": "1.06.15_inc1.5",
   "custom": {
     "gear-builder": {
-      "image": "amhe4269/hcp-icafix:1.06.15_inc1.2",
+      "image": "amhe4269/hcp-icafix:1.06.15_inc1.5",
       "category": "analysis"
     },
       "flywheel": {
@@ -41,8 +41,9 @@
                 "Standard_old.Rdata",
                 "UKBiobank.RData",
                 "WhII_MB6.RData",
-                "WhII_Standard.RData"],
-        "description": "Name of FIX training file to use for classification. 'Standard', 'HCP_hp2000', 'HCP7T_hp2000', 'WhII_MB6', 'WhII_Standard', 'UKBiobank'. See https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FIX/UserGuide#Trained-weights_files for details."
+                "WhII_Standard.RData",
+                "User Defined"],
+        "description": "Name of FIX training file to use for classification. 'Standard', 'HCP_hp2000', 'HCP7T_hp2000', 'WhII_MB6', 'WhII_Standard', 'UKBiobank'. To use a custom training file, select 'User Defined'. See https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FIX/UserGuide#Trained-weights_files for details."
       },
 
       "do_motion_regression": {
@@ -66,6 +67,18 @@
         "type": "boolean",
         "default": false,
         "description": "delete highpass files (note that delete intermediates=TRUE is not recommended for MR+FIX)"
+      },
+      "DropNonSteadyState": {
+        "type": "boolean",
+        "default": false,
+        "description": "set whether or not to remove XX number of inital non-steady state volumes. If no value is passed in 'DummyVolumes', non-steady state number is taken from mriqc IQMs, if neither are defined, an error will be returned."
+      },
+      "DummyVolumes": {
+        "type": "integer",
+        "optional": true,
+        "minimum": 0,
+        "maximum": 9999,
+        "description": "Number of dummy volumes to ignore at the beginning of scan. Leave blank if you want to use the non-steady state volumes recorded in mriqc IQMs."
       },
       "dry-run": {
           "type":"boolean",
@@ -120,20 +133,19 @@
   },
   "inputs": {
     "api-key": {
-        "base": "api-key"
+      "base": "api-key",
+      "read-only": true
     },
-    "functional_zip": {
-      "description": "Select functional run for ICA",
+    "hcp_zip": {
+      "description": "HCP minimal preprocessing pipeline output from bids-hcp gear.",
       "base": "file",
       "optional": false
     },
-   
-    "structural_zip": {
-      "description": "Select structural zip for the functional data",
+    "custom_training_file": {
+      "description": "(Optional) include a custom training file for component classification. For more details see https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FIX/UserGuide.",
       "base": "file",
-      "optional": false
+      "optional": true
     }
-
   },
   "environment": {
     "CARET7DIR": "/opt/workbench/bin_linux64",
