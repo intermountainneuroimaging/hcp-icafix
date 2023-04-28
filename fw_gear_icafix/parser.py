@@ -39,11 +39,13 @@ class GearArgs:
             log.info("Custom training file path, %s", self.custom_training_file)
 
             # check config matches input...
-            if self.config["TrainingFile"] != "User Defined":
+            if gtk_context.config["TrainingFile"] != "User Defined":
                 log.error("Custom training file passed as input, but TrainingFile option set to: %s. Not sure how to handle!", self.config["TrainingFile"])
 
             # set training file config parameter to custom path
-            self.config["TrainingFile"] = gtk_context.get_input_path("custom_training_file")
+            gtk_context.config["TrainingFilePath"] = gtk_context.get_input_path("custom_training_file")
+        else:
+            gtk_context.config["TrainingFilePath"] = gtk_context.config["TrainingFile"]
 
         # pull config settings
         self.icafix = {
@@ -59,7 +61,7 @@ class GearArgs:
             hcp_anlys_id = [item.split('/')[0] for item in f.namelist()]
 
         # unzip HCPpipeline files
-        # self.unzip_hcp(self.hcp_zipfile)
+        self.unzip_hcp(self.hcp_zipfile)
 
         # get current analysis (new) destination id
         dest_id = self.gtk_context.destination["id"]

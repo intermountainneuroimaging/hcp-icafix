@@ -45,27 +45,27 @@ def run(gear_args):
         # fetch dummy volumes (use hard coded value if present, else grab from mriqc)
         gear_args.config['AcqDummyVolumes'] = fetch_dummy_volumes(f, gear_args)
 
-        # #remove specified numner of inital volumes
-        # temp_file = drop_initial_volumes(f, gear_args)
-        #
-        # # generate the hcp_fix command options from gear contex
-        # generate_ica_command(f, gear_args)
-        #
-        # # execute hcp_fix command (inside this method checks for gear-dry-run)
-        # execute(gear_args)
-        #
-        # # add dummy vols back to keep output same as input:
-        # ica_files = searchfiles(os.path.join(os.path.dirname(f),"*hp*.nii.gz"), dryrun=False)
-        # for ica_file in ica_files:
-        #     cleanup_volume_files(ica_file, temp_file, gear_args)
-        #
-        # ica_files_surface = searchfiles(os.path.join(os.path.dirname(f),"*Atlas*hp*.dtseries.nii"), dryrun=False)
-        # for ica_file in ica_files_surface:
-        #     cleanup_surface_files(ica_file, temp_file, gear_args)
-        #
-        # # remove all tmp files
-        # cmd = "rm -Rf tmp*"
-        # execute_shell(cmd, dryrun=gear_args.config["dry-run"], cwd=os.path.dirname(f))
+        #remove specified numner of inital volumes
+        temp_file = drop_initial_volumes(f, gear_args)
+
+        # generate the hcp_fix command options from gear contex
+        generate_ica_command(f, gear_args)
+
+        # execute hcp_fix command (inside this method checks for gear-dry-run)
+        execute(gear_args)
+
+        # add dummy vols back to keep output same as input:
+        ica_files = searchfiles(os.path.join(os.path.dirname(f),"*hp*.nii.gz"), dryrun=False)
+        for ica_file in ica_files:
+            cleanup_volume_files(ica_file, temp_file, gear_args)
+
+        ica_files_surface = searchfiles(os.path.join(os.path.dirname(f),"*Atlas*hp*.dtseries.nii"), dryrun=False)
+        for ica_file in ica_files_surface:
+            cleanup_surface_files(ica_file, temp_file, gear_args)
+
+        # remove all tmp files
+        cmd = "rm -Rf tmp*"
+        execute_shell(cmd, dryrun=gear_args.config["dry-run"], cwd=os.path.dirname(f))
 
         # store metadata at the acquisition level
         labels_file = searchfiles(os.path.join(os.path.dirname(f),"*hp*.ica","fix4melview*.txt"), dryrun=False, find_first=True)
@@ -239,7 +239,7 @@ def cleanup_surface_files(cifti_file, temp_file, context):
 
 
 def generate_ica_command(input_file, context):
-    training_file = context.config['TrainingFile']
+    training_file = context.config['TrainingFilePath']
     highpass = context.config['HighPassFilter']
     mot_reg = context.config['do_motion_regression']
     fix_threshold = context.config['FixThreshold']
