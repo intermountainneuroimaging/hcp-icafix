@@ -19,8 +19,16 @@ from utils.singularity import run_in_tmp_dir
 # when the container runs. The run.py file then imports the rest of the gear as a
 # module.
 
-# os.chdir('/flywheel/v0/')
+os.chdir('/flywheel/v0/')
 log = logging.getLogger(__name__)
+
+## TODO - Feature updates
+#  1. Accept single HCP Pipelines result dir (001_hcp.zip)  (done)
+#  2. Accept custom training file (project level upload)    (done)
+#  3. Pull non-steady state detector from mriqc metadata (make bool) -- duplicate this logic in feat
+#  4. retain all hp2000 files (highpass files)
+#  5. remove all temp files
+#  6. add metadata to output variance explained, count?
 
 
 def main(context: GearToolkitContext):  # pragma: no cover

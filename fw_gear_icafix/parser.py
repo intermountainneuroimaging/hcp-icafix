@@ -4,6 +4,8 @@ from zipfile import ZipFile
 from flywheel_gear_toolkit import GearToolkitContext
 import os
 import logging
+import json
+from fw_gear_icafix.main import execute_shell
 from pathlib import Path
 log = logging.getLogger(__name__)
 
@@ -30,10 +32,20 @@ class GearArgs:
 
         # pull input filepaths
         self.debug = gtk_context.config.get("debug")
-        self.hcpfunc_zipfile = gtk_context.get_input_path("functional_zip")
-        log.info("Inputs file path, %s", self.hcpfunc_zipfile)
-        self.hcpstruct_zipfile = gtk_context.get_input_path("structural_zip")
-        log.info("Inputs file path, %s", self.hcpstruct_zipfile)
+        self.hcp_zipfile = gtk_context.get_input_path("hcp_zip")
+        log.info("Inputs file path, %s", self.hcp_zipfile)
+        if gtk_context.get_input_path("custom_training_file"):
+            self.custom_training_file = gtk_context.get_input_path("custom_training_file")
+            log.info("Custom training file path, %s", self.custom_training_file)
+
+            # check config matches input...
+            if gtk_context.config["TrainingFile"] != "User Defined":
+                log.error("Custom training file passed as input, but TrainingFile option set to: %s. Not sure how to handle!", self.config["TrainingFile"])
+
+            # set training file config parameter to custom path
+            gtk_context.config["TrainingFilePath"] = gtk_context.get_input_path("custom_training_file")
+        else:
+            gtk_context.config["TrainingFilePath"] = gtk_context.config["TrainingFile"]
 
         # pull config settings
         self.icafix = {
@@ -45,11 +57,18 @@ class GearArgs:
         self.work_dir = gtk_context.work_dir
         self.output_dir = gtk_context.output_dir
 
+        with ZipFile(self.hcp_zipfile, "r") as f:
+            hcp_anlys_id = [item.split('/')[0] for item in f.namelist()]
+
         # unzip HCPpipeline files
-        self.unzip_hcp(self.hcpstruct_zipfile)
-        self.unzip_hcp(self.hcpfunc_zipfile)
+        self.unzip_hcp(self.hcp_zipfile)
 
+        # get current analysis (new) destination id
+        dest_id = self.gtk_context.destination["id"]
 
+        # move HCP results one level up..
+        cmd = "mkdir " + str(dest_id) + "; mv "+hcp_anlys_id[0]+"/* "+str(dest_id) + "; rm -rf "+hcp_anlys_id[0]
+        execute_shell(cmd, dryrun=False, cwd=gtk_context.work_dir)
 
 
     def unzip_hcp(self, zip_filename):
