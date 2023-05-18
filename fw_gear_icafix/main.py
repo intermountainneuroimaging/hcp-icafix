@@ -118,9 +118,12 @@ def fetch_dummy_volumes(taskname, context):
     if f:
         IQMs = f.info["IQM"]
         log.info("Extracting dummy volumes from acquisition: %s", acq.label)
-        log.info("Set by mriqc....Using %s dummy volumes", IQMs["dummy_trs"])
-
-        return IQMs["dummy_trs"]
+        if "dummy_trs_custom" in IQMs:
+            log.info("Set by mriqc....Using %s dummy volumes", IQMs["dummy_trs_custom"])
+            return IQMs["dummy_trs_custom"]
+        else:
+            log.info("Set by mriqc....Using %s dummy volumes", IQMs["dummy_trs"])
+            return IQMs["dummy_trs"]
 
     # if we reach this point there is a problem! return error and exit
     log.error("Option to drop non-steady state volumes selected, no value passed or could be interpreted from session metadata. Quitting...")
