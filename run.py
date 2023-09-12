@@ -13,11 +13,16 @@ from flywheel_gear_toolkit import GearToolkitContext
 from fw_gear_icafix.main import run
 from fw_gear_icafix.parser import GearArgs
 from utils.singularity import run_in_tmp_dir
-
+import errorhandler
 # The run.py should be as minimal as possible.
 # The gear is split up into 2 main components. The run.py file which is executed
 # when the container runs. The run.py file then imports the rest of the gear as a
 # module.
+
+
+# Track if message gets logged with severity of error or greater
+error_handler = errorhandler.ErrorHandler()
+
 
 os.chdir('/flywheel/v0/')
 log = logging.getLogger(__name__)
@@ -25,10 +30,14 @@ log = logging.getLogger(__name__)
 ## TODO - Feature updates
 #  1. Accept single HCP Pipelines result dir (001_hcp.zip)  (done)
 #  2. Accept custom training file (project level upload)    (done)
-#  3. Pull non-steady state detector from mriqc metadata (make bool) -- duplicate this logic in feat
-#  4. retain all hp2000 files (highpass files)
-#  5. remove all temp files
-#  6. add metadata to output variance explained, count?
+#  3. Pull non-steady state detector from mriqc metadata (make bool) -- duplicate this logic in feat (done)
+#  4. retain all hp2000 files (highpass files) (done)
+#  5. remove all temp files (done)
+#  6. add metadata to output variance explained, count? (done)
+#  7. accept already generated ica directory (done)
+#  8. make bids compatible derivatives (done)
+#  9. accept hand label lists and apply denoising
+#  10. multirun mode!
 
 
 def main(context: GearToolkitContext):  # pragma: no cover
@@ -45,6 +54,11 @@ def main(context: GearToolkitContext):  # pragma: no cover
     # (e.g. config.json).
     log.info("Populating gear arguments")
     gear_args = GearArgs(context)
+
+    if error_handler.fired:
+        log.critical('Failure: exiting with code 1 due to logged errors')
+        run_error = 1
+        return run_error
 
     # Pass the args, kwargs to fw_gear_skeleton.main.run function to execute
     # the main functionality of the gear.

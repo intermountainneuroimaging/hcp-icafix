@@ -8,10 +8,10 @@
   "url": "https://github.com/Washington-University/Pipelines",
   "source": "https://github.com/intermountainneuroimaging/hcp-icafix",
   "cite": "(1) G. Salimi-Khorshidi, G. Douaud, C.F. Beckmann, M.F. Glasser, L. Griffanti S.M. Smith. Automatic denoising of functional MRI data: Combining independent component analysis and hierarchical fusion of classifiers. NeuroImage, 90:449-68, 2014 (2) L. Griffanti, G. Salimi-Khorshidi, C.F. Beckmann, E.J. Auerbach, G. Douaud, C.E. Sexton, E. Zsoldos, K. Ebmeier, N. Filippini, C.E. Mackay, S. Moeller, J.G. Xu, E. Yacoub, G. Baselli, K. Ugurbil, K.L. Miller, and S.M. Smith. ICA-based artefact removal and accelerated fMRI acquisition for improved resting state network imaging. NeuroImage, 95:232-47, 2014",
-  "version": "1.06.15_inc1.8",
+  "version": "1.06.15_inc1.8rc1",
   "custom": {
     "gear-builder": {
-      "image": "amhe4269/hcp-icafix:1.06.15_inc1.8",
+      "image": "amhe4269/hcp-icafix:1.06.15_inc1.8rc1",
       "category": "analysis"
     },
       "flywheel": {
@@ -139,10 +139,20 @@
     "hcp_zip": {
       "description": "HCP minimal preprocessing pipeline output from bids-hcp gear.",
       "base": "file",
-      "optional": false
+      "optional": true
     },
     "custom_training_file": {
       "description": "(Optional) include a custom training file for component classification. For more details see https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FIX/UserGuide.",
+      "base": "file",
+      "optional": true
+    },
+    "previous-results": {
+      "description": "(Optional) provide previously generated icafix results. This file should be used to apply a hand-labeled component list or custom training file and create new denoised timeseries.",
+      "base": "file",
+      "optional": true
+    },
+    "hand-labeled-noise-components": {
+      "description": "(Optional) tab delimited file containing a key for acquisitions where hand labeled noise components should be applied to generate a clean time series. The tab delimited file must contain columns 'subject', 'session', 'acquisition','noiselabels' OR 'flywheel session id', 'acquisition', 'noiselabels'. Noise Labels should be in the format (for example): [1, 4, 99, ... 140] - note that the square brackets, and use of commas, is required. ",
       "base": "file",
       "optional": true
     }

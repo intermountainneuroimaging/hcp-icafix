@@ -20,6 +20,7 @@ pandas = "^2.0.1"
 flywheel-gear-toolkit = {version = "^0.6.1", extras = ["all"]}
 flywheel-sdk = "^15.8.0"
 fw-file = "^1"
+errorhandler = "^2.0.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.2"
