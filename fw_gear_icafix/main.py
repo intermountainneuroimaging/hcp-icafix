@@ -33,37 +33,29 @@ def run(gear_args):
     """
     log.info("This is the beginning of the run file")
 
-    # pull list of func files for analysis (at this time only setup for single run mode **not multirun**)
-    if gear_args.mode == "hcpfix":
-        suffix = ".nii.gz"
-    elif gear_args.mode == "fix cleanup" or gear_args.mode == "hand labeled":
-        suffix = "_hp"+str(gear_args.config['HighPassFilter'])+".nii.gz"
-    try:
-        funcfiles = check_input_files(gear_args.analysis_dir, suffix)
-    except Exception as e:
-        log.exception(e)
-        log.fatal('Unable to locate correct functional file')
-        sys.exit(1)
-
     # add a loop here**
-    for f in funcfiles:
+    for index, row in gear_args.files.iterrows():
+
+        if not os.path.exists(row["preprocessed_files"]):
+            log.fatal('Unable to locate correct functional file')
+            sys.exit(1)
 
         # fetch dummy volumes (use hard coded value if present, else grab from mriqc)
-        gear_args.config['AcqDummyVolumes'] = fetch_dummy_volumes(f, gear_args)
+        gear_args.config['AcqDummyVolumes'] = fetch_dummy_volumes(row["preprocessed_files"], gear_args)
 
         #remove specified numner of inital volumes
-        temp_file = drop_initial_volumes(f, gear_args)
+        temp_file = drop_initial_volumes(row, gear_args)
 
         # generate the hcp_fix command options from gear contex
         if gear_args.mode == "hcpfix":
-            generate_icafix_command(f, gear_args,"hcpfix")
+            generate_icafix_command(row["preprocessed_files"], gear_args,"hcpfix")
 
             # execute hcp_fix command (inside this method checks for gear-dry-run)
             execute(gear_args)
 
         elif gear_args.mode == "fix cleanup":
             # # first apply new training model
-            icadir = searchfiles(os.path.join(os.path.dirname(f),"*hp*.ica"), dryrun=False, find_first=True)
+            icadir = searchfiles(os.path.join(row["taskdir"],"*hp*.ica"), dryrun=False, find_first=True)
             generate_icafix_command(icadir, gear_args, "classify")
             execute(gear_args)
 
@@ -72,7 +64,7 @@ def run(gear_args):
             cmd = "ln -s ../" + hpfile + " " + "filtered_func_data.nii.gz"
             execute_shell(cmd, dryrun=gear_args.config["dry-run"], cwd=icadir)
 
-            labels_file = searchfiles(os.path.join(os.path.dirname(f), "*hp*.ica", "fix4melview*.txt"), dryrun=False,
+            labels_file = searchfiles(os.path.join(row["taskdir"], "*hp*.ica", "fix4melview*.txt"), dryrun=False,
                                       find_recent=True)
             generate_icafix_command(labels_file, gear_args, "apply cleanup")
             execute(gear_args)
@@ -86,15 +78,12 @@ def run(gear_args):
             execute_shell(cmd, dryrun=gear_args.config["dry-run"], cwd=icadir)
 
         elif gear_args.mode == "hand labeled":
-            # TODO - add method to handle hand labeling (INPUT list of acq: noise components) (CONVERT to handl_label_nosie.txt files) - apply timeseries cleanup
-            #   -- make sure that the txt file contains a single line (or, at least, should have as its final line) with a list of the bad components only, with the format (for example): [1, 4, 99, ... 140] - note that the square brackets, and use of commas, is required. Also, make sure there is an empty line at the end (i.e. hit return after writing the list). Counting starts at 1, not 0
-            #   -- /usr/local/fix/fix -a <mel.ica/fix4melview_TRAIN_thr.txt>  [-m [-h <highpass>]]  [-A]
 
             # identify the hand labels for current acquisition
-            handlabels = fetch_noise_labels(f, gear_args)
+            handlabels = fetch_noise_labels(row["preprocessed_files"], gear_args)
 
             # write hand_labels_noise.txt
-            icadir = searchfiles(os.path.join(os.path.dirname(f), "*hp*.ica"), dryrun=False, find_first=True)
+            icadir = searchfiles(os.path.join(row["taskdir"], "*hp*.ica"), dryrun=False, find_first=True)
             handlabels_file = op.join(icadir,"hand_label_noise.txt")
             with open(handlabels_file,'w') as fid:
                 fid.write(" ,".join(handlabels))
@@ -118,23 +107,24 @@ def run(gear_args):
 
 
         # add dummy vols back to keep output same as input:
-        ica_files = searchfiles(os.path.join(os.path.dirname(f),"*hp*.nii.gz"), dryrun=False)
+        ica_files = searchfiles(os.path.join(row["taskdir"],"*hp*.nii.gz"), dryrun=False)
         for ica_file in ica_files:
             cleanup_volume_files(ica_file, temp_file, gear_args)
 
-        ica_files_surface = searchfiles(os.path.join(os.path.dirname(f),"*Atlas*hp*.dtseries.nii"), dryrun=False)
-        for ica_file in ica_files_surface:
-            cleanup_surface_files(ica_file, temp_file, gear_args)
+        if row["surface_files"]:
+            ica_files_surface = searchfiles(os.path.join(row["taskdir"],"*Atlas*hp*.dtseries.nii"), dryrun=False)
+            for ica_file in ica_files_surface:
+                cleanup_surface_files(ica_file, temp_file, gear_args)
 
         # remove all tmp files
         cmd = "rm -Rf tmp*"
-        execute_shell(cmd, dryrun=gear_args.config["dry-run"], cwd=os.path.dirname(f))
+        execute_shell(cmd, dryrun=gear_args.config["dry-run"], cwd=row["taskdir"])
 
         # store metadata at the acquisition level
-        labels_file = searchfiles(os.path.join(os.path.dirname(f),"*hp*.ica","fix4melview*.txt"), dryrun=False, find_recent=True)
-        icstats_file = searchfiles(os.path.join(os.path.dirname(f), "*hp*.ica", "filtered_func_data.ica","melodic_ICstats"), dryrun=False,
+        labels_file = searchfiles(os.path.join(row["taskdir"],"*hp*.ica","fix4melview*.txt"), dryrun=False, find_recent=True)
+        icstats_file = searchfiles(os.path.join(row["taskdir"], "*hp*.ica", "filtered_func_data.ica","melodic_ICstats"), dryrun=False,
                                   find_first=True)
-        metrics = store_metadata(labels_file, icstats_file, f, gear_args)
+        metrics = store_metadata(labels_file, icstats_file, row["preprocessed_files"], gear_args)
 
 
     # cleanup gear and store outputs and logs...
@@ -194,7 +184,7 @@ def fetch_dummy_volumes(taskname, context):
     log.error("Option to drop non-steady state volumes selected, no value passed or could be interpreted from session metadata. Quitting...")
 
 
-def drop_initial_volumes(input_file, context):
+def drop_initial_volumes(input_files, context):
     # if dummy volumes are passed in config, remove them from working file before running ica
     # ** stitch it back together at the end**
 
@@ -206,48 +196,45 @@ def drop_initial_volumes(input_file, context):
     log.info("Removing %s volumes. ", str(context.config['AcqDummyVolumes']))
     dummyvars = context.config['AcqDummyVolumes']
 
-    f = NamedTemporaryFile(delete=False, dir=os.path.dirname(input_file))
-    store_original_filename = f.name + "_" + os.path.basename(input_file)
-    shutil.copyfile(input_file, store_original_filename)
+    f = NamedTemporaryFile(delete=False, dir=input_files["taskdir"])
+    store_original_filename = f.name + "_" + os.path.basename(input_files["preprocessed_files"])
+    shutil.copyfile(input_files["preprocessed_files"], store_original_filename)
 
     # create trimmed nifti
-    cmd = os.environ["FSLDIR"] + "/bin/fslroi " + store_original_filename + " " + input_file + " " + str(dummyvars) + " -1"
-    execute_shell(cmd, dryrun=context.config["dry-run"], cwd=os.path.dirname(input_file))
+    cmd = os.environ["FSLDIR"] + "/bin/fslroi " + store_original_filename + " " + input_files["preprocessed_files"] + " " + str(dummyvars) + " -1"
+    execute_shell(cmd, dryrun=context.config["dry-run"], cwd=input_files["taskdir"])
 
     # create trimmed Movement_Regressors.txt
-    motion_file = searchfiles(os.path.join(os.path.dirname(input_file),"Movement_Regressors.txt"), find_first=True)
+    if input_files["motion_files"]:
+        store_original_motionfile = f.name + "_" + os.path.basename(input_files["motion_files"])
+        shutil.copyfile(input_files["motion_files"], store_original_motionfile)
 
-    if motion_file:
-        store_original_motionfile = f.name + "_" + os.path.basename(motion_file)
-        shutil.copyfile(motion_file, store_original_motionfile)
-
-        cmd = "tail -n +" + str(dummyvars+1) + " < " + store_original_motionfile + " > " + motion_file
-        execute_shell(cmd, dryrun=context.config["dry-run"], cwd=os.path.dirname(input_file))
+        cmd = "tail -n +" + str(dummyvars+1) + " < " + store_original_motionfile + " > " + input_files["motion_files"]
+        execute_shell(cmd, dryrun=context.config["dry-run"], cwd=os.path.dirname(input_files["preprocessed_files"]))
 
     # create trimmed cifti (there may be a more direct way to do this...)
-    cifti_file = searchfiles(input_file.replace(".nii.gz", "_Atlas.dtseries.nii"), find_first=True)
-    if cifti_file:
-        store_original_ciftifile = f.name + "_" + os.path.basename(cifti_file)
+    if input_files["surface_files"]:
+        store_original_ciftifile = f.name + "_" + os.path.basename(input_files["surface_files"])
 
         # retrieve step-interval-size (TR)
-        cmd = os.environ["FSL_FIX_WBC"] + " -file-information " + cifti_file + " -only-step-interval "
-        stepsize = execute_shell(cmd, dryrun=context.config["dry-run"], cwd=os.path.dirname(input_file))
+        cmd = os.environ["FSL_FIX_WBC"] + " -file-information " + input_files["surface_files"] + " -only-step-interval "
+        stepsize = execute_shell(cmd, dryrun=context.config["dry-run"], cwd=input_files["taskdir"])
 
         # make copy of original file
-        shutil.copyfile(cifti_file, store_original_ciftifile)
+        shutil.copyfile(input_files["surface_files"], store_original_ciftifile)
 
         # convert cifti to nifti
-        cmd = os.environ["FSL_FIX_WBC"] + " -cifti-convert -to-nifti " + cifti_file + " tmp_cifti2nfiti.nii.gz"
-        execute_shell(cmd, dryrun=context.config["dry-run"], cwd=os.path.dirname(input_file))
+        cmd = os.environ["FSL_FIX_WBC"] + " -cifti-convert -to-nifti " + input_files["surface_files"] + " tmp_cifti2nfiti.nii.gz"
+        execute_shell(cmd, dryrun=context.config["dry-run"], cwd=input_files["taskdir"])
 
         # trim cifti2nifti file
         cmd = os.environ["FSLDIR"] + "/bin/fslroi " + "tmp_cifti2nfiti.nii.gz" + " " + "tmp_cifti2nfiti_trimmed.nii.gz" + " " + str(
             dummyvars) + " -1"
-        execute_shell(cmd, dryrun=context.config["dry-run"], cwd=os.path.dirname(input_file))
+        execute_shell(cmd, dryrun=context.config["dry-run"], cwd=input_files["taskdir"])
 
         # convert back to cifti
-        cmd = os.environ["FSL_FIX_WBC"] + " -cifti-convert -from-nifti " + "tmp_cifti2nfiti_trimmed.nii.gz" + " " + store_original_ciftifile + " " + cifti_file + " -reset-timepoints " + str(stepsize) + " 0"
-        execute_shell(cmd, dryrun=context.config["dry-run"], cwd=os.path.dirname(input_file))
+        cmd = os.environ["FSL_FIX_WBC"] + " -cifti-convert -from-nifti " + "tmp_cifti2nfiti_trimmed.nii.gz" + " " + store_original_ciftifile + " " + input_files["surface_files"] + " -reset-timepoints " + str(stepsize) + " 0"
+        execute_shell(cmd, dryrun=context.config["dry-run"], cwd=input_files["taskdir"])
 
     return store_original_filename
 

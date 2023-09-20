@@ -8,7 +8,7 @@ import json
 from fw_gear_icafix.main import execute_shell
 import errorhandler
 import pandas as pd
-
+import subprocess as sp
 from pathlib import Path
 
 log = logging.getLogger(__name__)
@@ -109,6 +109,44 @@ class GearArgs:
 
         self.unzipped_files = orig
 
+        # pull file list for each iteration
+        # 1. pull task dirs
+        # Look for tasks in HCP preprocessed file list
+        taskdirs = sp.Popen(
+            "ls -d " + self.analysis_dir.absolute().as_posix() + "/HCPPipe/sub-*/ses-*/MNINonLinear/Results/*task*", shell=True,
+            stdout=sp.PIPE,
+            stderr=sp.PIPE, universal_newlines=True
+        )
+
+        stdout, _ = taskdirs.communicate()
+        log.info("Running HCP Fix for the following directories: ")
+        log.info("\n %s", stdout)
+
+        taskdirs = stdout.splitlines()
+
+        self.files = pd.DataFrame()
+        
+        if self.mode == "hand labeled" or self.mode == "fix cleanup":
+            for idx, d in enumerate(taskdirs):
+                basename = Path(d).stem
+                file1 = [s for s in self.unzipped_files if "_hp" + str(self.preproc_gear.job.config['config']['HighPassFilter']) + ".nii.gz" in s and basename in s][0]
+                tmp = pd.DataFrame({"taskdir": d, "preprocessed_files": file1, "motion_files": None, "surface_files": None}, index=[0])
+                self.files = pd.concat([self.files, tmp], ignore_index=True)
+        else:
+            for idx, d in enumerate(taskdirs):
+                basename = Path(d).stem
+                file1 = [s for s in self.unzipped_files if basename + ".nii.gz" in s and d in s][0]
+                file2 = [s for s in self.unzipped_files if "Movement_Regressors.txt" in s and d in s][0]
+                file3 = [s for s in self.unzipped_files if "_Atlas.dtseries.nii" in s and d in s][0]
+                tmp = pd.DataFrame(
+                    {"taskdir": d, "preprocessed_files": file1, "motion_files": file2, "surface_files": file3}, index=[0])
+                self.files = pd.concat([self.files, tmp], ignore_index=True)
+
+        # remove previous iteration "clean volumes"
+        files = [s for s in self.unzipped_files if "clean." in s or "clean_vn" in s]
+        for f in files:
+            os.remove(f)
+
     def unzip_inputs(self, zip_filename):
         """
         unzip_inputs unzips the contents of zipped gear output into the working
@@ -140,8 +178,12 @@ class GearArgs:
             for i in set(top1):
                 outpath.append(os.path.join(self.analysis_dir, i))
 
-            # get previous gear info
-            self.preproc_gear = self.client.get(top[0])
+            try:
+                # get previous gear info
+                self.preproc_gear = self.client.get_analysis(top[0])
+            except:
+                log.warning("unable to locate previous preprocessing gear")
+
         else:
             outpath = os.path.join(self.analysis_dir, top[0])
 
