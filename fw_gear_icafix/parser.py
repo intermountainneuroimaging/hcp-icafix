@@ -10,6 +10,7 @@ import errorhandler
 import pandas as pd
 import subprocess as sp
 from pathlib import Path
+import csv
 
 log = logging.getLogger(__name__)
 
@@ -200,7 +201,14 @@ class GearArgs:
         analys = self.client.get_container(self.dest_id)
 
         # read spreadsheet
-        df = pd.read_csv(file, sep='\t',dtype={'subject': str, 'session': str, 'flywheel session id': str, 'noiselabels': str})
+        if ".tsv" in file or ".txt" in file:
+            delim = '\t'
+        elif ".csv" in file:
+            delim = ','
+        else:
+            with open(file, 'rb') as csvfile:
+                delim = csv.Sniffer().sniff(csvfile.read(1024).decode('utf-8'), delimiters=',|\t ')
+        df = pd.read_csv(file, sep=delim, quotechar="'", skipinitialspace=True, encoding="utf-8", dtype={'subject': str, 'session': str, 'flywheel session id': str, 'noiselabels': str})
         columns = df.columns
 
         if ("subject" in columns) and ("session" in columns) and ("acquisition" in columns) and (
