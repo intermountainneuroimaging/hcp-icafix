@@ -21,6 +21,8 @@ from flywheel_gear_toolkit.interfaces.command_line import (
 
 from fw_gear_icafix import metadata
 import utils.filemapper as filemapper
+from utils.report.report import report
+from utils.zip_htmls import zip_htmls
 
 log = logging.getLogger(__name__)
 
@@ -51,13 +53,13 @@ def run(gear_args):
             generate_icafix_command(row["preprocessed_files"], gear_args,"hcpfix")
 
             # execute hcp_fix command (inside this method checks for gear-dry-run)
-            execute(gear_args)
+            fix_command = execute(gear_args)
 
         elif gear_args.mode == "fix cleanup":
             # # first apply new training model
             icadir = searchfiles(os.path.join(row["taskdir"],"*hp*.ica"), dryrun=False, find_first=True)
             generate_icafix_command(icadir, gear_args, "classify")
-            execute(gear_args)
+            fix_command = execute(gear_args)
 
             # generate new clean dataset
             hpfile = os.path.basename(icadir).replace(".ica",".nii.gz")
@@ -67,7 +69,7 @@ def run(gear_args):
             labels_file = searchfiles(os.path.join(row["taskdir"], "*hp*.ica", "fix4melview*.txt"), dryrun=False,
                                       find_recent=True)
             generate_icafix_command(labels_file, gear_args, "apply cleanup")
-            execute(gear_args)
+            fix_command = execute(gear_args)
 
             # unlink filtered func file
             cmd = "unlink " + os.path.join(icadir, "filtered_func_data.nii.gz")
@@ -94,7 +96,7 @@ def run(gear_args):
             execute_shell(cmd, dryrun=gear_args.config["dry-run"], cwd=icadir)
 
             generate_icafix_command(handlabels_file, gear_args, "apply cleanup")
-            execute(gear_args)
+            fix_command = execute(gear_args)
 
             # unlink filtered func file
             cmd = "unlink " + os.path.join(icadir, "filtered_func_data.nii.gz")
@@ -126,6 +128,10 @@ def run(gear_args):
                                   find_first=True)
         metrics = store_metadata(labels_file, icstats_file, row["preprocessed_files"], gear_args)
 
+        # generate report for ica classification
+        reportdir = report(row["taskdir"],fix_command)
+
+        zip_htmls(gear_args.output_dir, gear_args.dest_id,reportdir)
 
     # cleanup gear and store outputs and logs...
     cleanup(gear_args)
@@ -159,9 +165,7 @@ def fetch_dummy_volumes(taskname, context):
     if context.config["DropNonSteadyState"] is False:
         return 0
 
-    taskname_split=taskname.split("/")[-1].split(".")[0].split("_")
-    index = taskname_split.index("bold")
-    bids_name = "_".join(taskname_split[1:index])
+    bids_name = fetch_acq_name(taskname)
 
     acq, f = metadata.find_matching_acq(bids_name, context)
 
@@ -182,6 +186,13 @@ def fetch_dummy_volumes(taskname, context):
 
     # if we reach this point there is a problem! return error and exit
     log.error("Option to drop non-steady state volumes selected, no value passed or could be interpreted from session metadata. Quitting...")
+
+
+def fetch_acq_name(taskname):
+    taskname_split = taskname.split("/")[-1].split(".")[0].split("_")
+    index = taskname_split.index("bold")
+    bids_name = "_".join(taskname_split[1:index])
+    return bids_name
 
 
 def drop_initial_volumes(input_files, context):
@@ -246,7 +257,7 @@ def cleanup_volume_files(ica_file, temp_file, context):
         # do nothing
         return
 
-    log.info("Adding dummy frames back to ICA cleaned output%s!", os.path.basename(ica_file))
+    log.info("Adding dummy frames back to ICA cleaned output %s!", os.path.basename(ica_file))
     dummyvars = context.config['AcqDummyVolumes']
 
     # get the original dummy volumes
@@ -370,6 +381,7 @@ def execute(gear_args):
         log.exception(e)
         log.fatal('Unable to run hcp_fix')
         sys.exit(1)
+    return command
 
 
 def cleanup(gear_args: GearToolkitContext):

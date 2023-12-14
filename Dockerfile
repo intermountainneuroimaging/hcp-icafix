@@ -193,7 +193,7 @@ RUN apt-get update &&\
 # Install poetry based on their preferred method. pip install is finnicky.
 # Designate the install location, so that you can find it in Docker.
 ENV PYTHONUNBUFFERED=1 \
-    POETRY_VERSION=1.1.6 \
+    POETRY_VERSION=1.7.0 \
     # make poetry install to this location
     POETRY_HOME="/opt/poetry" \
     # do not ask any interactive questions
@@ -206,12 +206,14 @@ RUN python3.9 -m pip install --upgrade pip && \
 ENV PATH="$POETRY_HOME/bin:$PATH"
 
 # get-poetry respects ENV
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+RUN curl -sSL https://install.python-poetry.org | python3 - ;\
+    ln -sf ${POETRY_HOME}/lib/poetry/_vendor/py3.9 ${POETRY_HOME}/lib/poetry/_vendor/py3.8; \
+    chmod +x "$POETRY_HOME/bin/poetry"
 
 # Installing main dependencies
 ARG FLYWHEEL=/flywheel/v0
 COPY pyproject.toml poetry.lock $FLYWHEEL/
-RUN poetry install --no-root --no-dev
+RUN poetry install --no-root --only main
 
 ## Installing the current project (most likely to change, above layer can be cached)
 ## Note: poetry requires a README.md to install the current project

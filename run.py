@@ -43,8 +43,6 @@ log = logging.getLogger(__name__)
 def main(context: GearToolkitContext):  # pragma: no cover
     """Parses config and run"""
 
-    # context.init_logging()
-
     FWV0 = Path.cwd()
     log.info("Running gear in %s", FWV0)
     log.info("output_dir is %s", context.output_dir)

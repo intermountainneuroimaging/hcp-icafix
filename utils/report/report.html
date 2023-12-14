@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8"/>
+        <title>Title</title>
+        <style>
+            code {
+              font-family: Consolas,"courier new";
+              color: crimson;
+              background-color: #f1f1f1;
+              padding: 2px;
+              font-size: 105%;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>ICAFIX</h1>
+        <p>‘FMRIB's ICA-based Xnoiseifier’ (FIX). fMRI data summary before and after ICA based denoising shown below. Component Maps are created with maximum intensity projection (glass brain) with a black brain outline. Right hand side of each map: time series (top in seconds), frequency spectrum (bottom in Hz). Components classified as signal are plotted in green; noise components in red.</p>
+        <img src="figures/carpetplot.png"/>
+        <h3>Components</h3>
+        <div id="components"></div>
+        <h3>Methods</h3>
+        <p><code id="cmd">the command used to run aroma</code>.</p>
+    </body>
+</html>
