@@ -17,7 +17,6 @@ log = logging.getLogger(__name__)
 # Track if message gets logged with severity of error or greater
 error_handler = errorhandler.ErrorHandler()
 
-
 # This function mainly parses gear_context's config.json file and returns relevant
 # inputs and options.
 class GearArgs:
@@ -93,11 +92,11 @@ class GearArgs:
                     analys = self.client.get_container(self.dest_id)
                     log.info("Using hand labeled noise for session %s", self.client.get_container(analys.parents["session"]).id)
                 else:
-                    log.error("Hand labeled noise not correctly organized")
+                    raise Exception("Hand labeled noise not correctly organized")
+
 
         else:
-            log.error("Ambiguous Inputs passed, unable to determine gear mode. Please try again.")
-            return
+            raise Exception("Ambiguous Inputs passed, unable to determine gear mode. Please try again.")
 
         log.info("Inputs file path, %s", self.input_zip)
         self.unzip_inputs(self.input_zip)
@@ -118,8 +117,18 @@ class GearArgs:
             stdout=sp.PIPE,
             stderr=sp.PIPE, universal_newlines=True
         )
-
         stdout, _ = taskdirs.communicate()
+
+        if not stdout.splitlines():
+            # try old naming scheme
+            taskdirs = sp.Popen(
+                "ls -d " + self.analysis_dir.absolute().as_posix() + "/*/MNINonLinear/Results/*task*",
+                shell=True,
+                stdout=sp.PIPE,
+                stderr=sp.PIPE, universal_newlines=True
+            )
+            stdout, _ = taskdirs.communicate()
+
         log.info("Running HCP Fix for the following directories: ")
         log.info("\n %s", stdout)
 
@@ -130,7 +139,11 @@ class GearArgs:
         if self.mode == "hand labeled" or self.mode == "fix cleanup":
             for idx, d in enumerate(taskdirs):
                 basename = Path(d).stem
-                file1 = [s for s in self.unzipped_files if "_hp" + str(self.preproc_gear.job.config['config']['HighPassFilter']) + ".nii.gz" in s and basename in s][0]
+                try:
+                    file1 = [s for s in self.unzipped_files if "_hp" + str(self.preproc_gear.job.config['config']['HighPassFilter']) + ".nii.gz" in s and basename in s][0]
+                except AttributeError:
+                    file1 = [s for s in self.unzipped_files if "_hp" + str(
+                        self.config['HighPassFilter']) + ".nii.gz" in s and basename in s][0]
                 tmp = pd.DataFrame({"taskdir": d, "preprocessed_files": file1, "motion_files": None, "surface_files": None}, index=[0])
                 self.files = pd.concat([self.files, tmp], ignore_index=True)
         else:

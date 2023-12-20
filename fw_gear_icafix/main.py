@@ -129,9 +129,9 @@ def run(gear_args):
         metrics = store_metadata(labels_file, icstats_file, row["preprocessed_files"], gear_args)
 
         # generate report for ica classification
-        reportdir = report(row["taskdir"],fix_command)
+        reportdir = report(row["taskdir"], fix_command)
 
-        zip_htmls(gear_args.output_dir, gear_args.dest_id,reportdir)
+        zip_htmls(gear_args.output_dir, gear_args.dest_id, reportdir)
 
     # cleanup gear and store outputs and logs...
     cleanup(gear_args)
@@ -369,6 +369,7 @@ def execute(gear_args):
             dry_run=gear_args.config["dry-run"],
             environ=gear_args.environ,
             stdout_msg=stdout_msg,
+            cont_output=True,
         )
         log.info("\n %s", stdout)
         log.info("\n %s", stderr)

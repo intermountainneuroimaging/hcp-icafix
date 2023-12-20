@@ -61,8 +61,9 @@ def component_images(analysis_dir, labels_file):
     time = np.linspace(0, mmix.shape[0] * tr, mmix.shape[0])
 
     stats = pd.read_csv(stats_filename, delim_whitespace=True, header=None)
+
     if "fix4melview" in labels_filename:
-        labels = pd.read_csv(labels_filename, sep=',', skipinitialspace=True, skiprows=[0], header=None)
+        labels = pd.read_csv(labels_filename, sep=',', skipinitialspace=True, skiprows=[0], header=None, on_bad_lines='skip')
         labels.columns = ["IC","Label","Noise","Weight"]
 
     elif "hand_label_noise.txt" in labels_filename:
