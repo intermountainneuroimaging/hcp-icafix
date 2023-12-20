@@ -52,7 +52,8 @@ class GearArgs:
             if gtk_context.config["TrainingFile"] != "User Defined":
                 log.error(
                     "Custom training file passed as input, but TrainingFile option set to: %s. Not sure how to handle!",
-                    self.config["TrainingFile"])
+                    gtk_context.config["TrainingFile"])
+                return
 
             # set training file config parameter to custom path
             gtk_context.config["TrainingFilePath"] = gtk_context.get_input_path("custom_training_file")
