@@ -86,7 +86,7 @@ def run(gear_args):
 
             # write hand_labels_noise.txt
             icadir = searchfiles(os.path.join(row["taskdir"], "*hp*.ica"), dryrun=False, find_first=True)
-            handlabels_file = op.join(icadir,"hand_label_noise.txt")
+            handlabels_file = op.join(icadir,"hand_labels_noise.txt")
             with open(handlabels_file,'w') as fid:
                 fid.write(" ,".join(handlabels))
 

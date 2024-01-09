@@ -66,7 +66,7 @@ def component_images(analysis_dir, labels_file):
         labels = pd.read_csv(labels_filename, sep=',', skipinitialspace=True, skiprows=[0], header=None, on_bad_lines='skip')
         labels.columns = ["IC","Label","Noise","Weight"]
 
-    elif "hand_label_noise.txt" in labels_filename:
+    elif "hand_labels_noise.txt" in labels_filename:
         with open(labels_filename) as f:
             s = f.read()
         noise_comps = s.replace("[", "").replace("]", "").replace("\n", "").split(", ")
@@ -216,8 +216,8 @@ def report(path, cmd):
     shutil.copy2(op.join(op.dirname(op.realpath(__file__)), "report.html"), report_file)
 
     # create figures...
-    if os.path.exists(op.join(icadir,"hand_label_noise.txt")):
-        labels_file = op.join(icadir, "hand_label_noise.txt")
+    if os.path.exists(op.join(icadir,"hand_labels_noise.txt")):
+        labels_file = op.join(icadir, "hand_labels_noise.txt")
     else:
         labels_file = searchfiles(os.path.join(icadir, "fix4melview*.txt"), dryrun=False, find_recent=True)
     component_images(icadir, labels_file)
@@ -229,7 +229,15 @@ def report(path, cmd):
     # update list of images for report...
     cwd = os.getcwd()
     os.chdir(icadir)
-    files = searchfiles("figures/C*.png")
+
+    # return in order all files
+    cmd = "ls -dtr figures/C*.png"
+    terminal = sp.Popen(
+        cmd, shell=True, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True
+    )
+    stdout, stderr = terminal.communicate()
+    files = stdout.strip("\n").split("\n")
+
     os.chdir(cwd)
 
     # load html into python
