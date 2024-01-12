@@ -1,0 +1,45 @@
+{
+    "anat": 
+        {
+            "bidspath": "{PIPELINE}/sub-{SUBJECT}/ses-{SESSION}/anat",
+            "files": {
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/T1w_restore.nii.gz": "sub-{SUBJECT}_ses-{SESSION}_space-MNI152NLin6Asym_desc-preproc_T1w.nii.gz",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/T1w_restore_brain.nii.gz": "sub-{SUBJECT}_ses-{SESSION}_space-MNI152NLin6Asym_desc-brain_T1w.nii.gz",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/T1w/T1w_acpc_dc_restore.nii.gz": "sub-{SUBJECT}_ses-{SESSION}_desc-preproc_T1w.nii.gz",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/T1w/T1w_acpc_dc_restore_brain.nii.gz": "sub-{SUBJECT}_ses-{SESSION}_desc-brain_T1w.nii.gz",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/fsaverage_LR32k/{SUBJECT}.curvature.32k_fs_LR.dscalar.nii": "sub-{SUBJECT}_ses-{SESSION}_space-fsLR32k_curv.dscalar.nii",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/fsaverage_LR32k/{SUBJECT}.sulc.32k_fs_LR.dscalar.nii": "sub-{SUBJECT}_ses-{SESSION}_space-fsLR32k_sulc.dscalar.nii",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/fsaverage_LR32k/{SUBJECT}.thickness.32k_fs_LR.dscalar.nii": "sub-{SUBJECT}_ses-{SESSION}_space-fsLR32k_thickness.dscalar.nii",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/fsaverage_LR32k/{SUBJECT}.L.midthickness.32k_fs_LR.surf.gii": "sub-{SUBJECT}_ses-{SESSION}_hemi-L_space-MNI152NLin6Asym_mesh-fsLR32k_midthickness.surf.gii",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/fsaverage_LR32k/{SUBJECT}.R.midthickness.32k_fs_LR.surf.gii": "sub-{SUBJECT}_ses-{SESSION}_hemi-R_space-MNI152NLin6Asym_mesh-fsLR32k_midthickness.surf.gii",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/{SUBJECT}.L.midthickness.164k_fs_LR.surf.gii": "sub-{SUBJECT}_ses-{SESSION}_hemi-L_space-MNI152NLin6Asym_mesh-fsLR164k_midthickness.surf.gii",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/{SUBJECT}.R.midthickness.164k_fs_LR.surf.gii": "sub-{SUBJECT}_ses-{SESSION}_hemi-R_space-MNI152NLin6Asym_mesh-fsLR164k_midthickness.surf.gii",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/Native/{SUBJECT}.L.midthickness.native.surf.gii": "sub-{SUBJECT}_ses-{SESSION}_hemi-L_space-MNI152NLin6Asym_mesh-native_midthickness.surf.gii",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/Native/{SUBJECT}.R.midthickness.native.surf.gii": "sub-{SUBJECT}_ses-{SESSION}_hemi-R_space-MNI152NLin6Asym_mesh-native_midthickness.surf.gii",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/T1w/fsaverage_LR32k/{SUBJECT}.L.midthickness.32k_fs_LR.surf.gii": "sub-{SUBJECT}_ses-{SESSION}_hemi-L_space-T1w_mesh-fsLR32k_midthickness.surf.gii",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/T1w/fsaverage_LR32k/{SUBJECT}.R.midthickness.32k_fs_LR.surf.gii": "sub-{SUBJECT}_ses-{SESSION}_hemi-R_space-T1w_mesh-fsLR32k_midthickness.surf.gii",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/T1w/Native/{SUBJECT}.L.midthickness.native.surf.gii": "sub-{SUBJECT}_ses-{SESSION}_hemi-L_space-T1w_mesh-native_midthickness.surf.gii",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/T1w/Native/{SUBJECT}.R.midthickness.native.surf.gii": "sub-{SUBJECT}_ses-{SESSION}_hemi-R_space-T1w_mesh-native_midthickness.surf.gii",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/T1w/aparc+aseg.nii.gz": "sub-{SUBJECT}_ses-{SESSION}_space-T1w_dseg.nii.gz",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/fsaverage_LR32k/{SUBJECT}.MyelinMap.32k_fs_LR.dscalar.nii": "sub-{SUBJECT}_ses-{SESSION}_atlas-MNI_space-fsLR32k_myelinmap.dscalar.nii",
+                "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/fsaverage_LR32k/{SUBJECT}.SmoothedMyelinMap.32k_fs_LR.dscalar.nii": "sub-{SUBJECT}_ses-{SESSION}_atlas-MNI_space-fsLR32k_desc-smoothed_myelinmap.dscalar.nii"
+            }
+
+        },
+    "func": 
+        {
+            "bidspath": "{PIPELINE}/sub-{SUBJECT}/ses-{SESSION}/func",
+            "files": {
+                    "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/Results/ses-{SESSION}_{ACQ}_bold/ses-{SESSION}_{ACQ}_bold_SBRef.nii.gz": "sub-{SUBJECT}_ses-{SESSION}_{ACQ}_space-MNI152NLin6Asym_sbref.nii.gz",
+                    "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/Results/ses-{SESSION}_{ACQ}_bold/ses-{SESSION}_{ACQ}_bold.nii.gz": "sub-{SUBJECT}_ses-{SESSION}_{ACQ}_space-MNI152NLin6Asym_desc-preproc_bold.nii.gz",
+                    "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/Results/ses-{SESSION}_{ACQ}_bold/ses-{SESSION}_{ACQ}_bold_Atlas.dtseries.nii": "sub-{SUBJECT}_ses-{SESSION}_{ACQ}_space-fsLR32k_desc-preproc_timeseries.dtseries.nii",
+                    "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/Results/ses-{SESSION}_{ACQ}_bold/ses-{SESSION}_{ACQ}_bold_hp2000{TRAININGFILE}_clean.nii.gz": "sub-{SUBJECT}_ses-{SESSION}_{ACQ}_space-MNI152NLin6Asym_desc-ICAFIX{TRAININGFILE}nonaggr_bold.nii.gz",
+                    "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/Results/ses-{SESSION}_{ACQ}_bold/ses-{SESSION}_{ACQ}_bold_Atlas_hp2000{TRAININGFILE}_clean.dtseries.nii": "sub-{SUBJECT}_ses-{SESSION}_{ACQ}_space-fsLR32k_desc-ICAFIX{TRAININGFILE}nonaggr_timeseries.dtseries.nii",
+                    "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/Results/ses-{SESSION}_{ACQ}_bold/mc/confounds_timeseries.tsv": "sub-{SUBJECT}_ses-{SESSION}_{ACQ}_desc-confounds_timeseries.tsv",
+                    "../../../../HCPPipe/sub-{SUBJECT}/ses-{SESSION}/MNINonLinear/Results/ses-{SESSION}_{ACQ}_bold/mc/prefiltered_func_data_mcf.par": "sub-{SUBJECT}_ses-{SESSION}_{ACQ}_desc-mcf_timeseries.par"
+            }
+
+        }
+}
+
+
