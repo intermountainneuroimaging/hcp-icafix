@@ -8,10 +8,10 @@
   "url": "https://github.com/Washington-University/Pipelines",
   "source": "https://github.com/intermountainneuroimaging/hcp-icafix",
   "cite": "(1) G. Salimi-Khorshidi, G. Douaud, C.F. Beckmann, M.F. Glasser, L. Griffanti S.M. Smith. Automatic denoising of functional MRI data: Combining independent component analysis and hierarchical fusion of classifiers. NeuroImage, 90:449-68, 2014 (2) L. Griffanti, G. Salimi-Khorshidi, C.F. Beckmann, E.J. Auerbach, G. Douaud, C.E. Sexton, E. Zsoldos, K. Ebmeier, N. Filippini, C.E. Mackay, S. Moeller, J.G. Xu, E. Yacoub, G. Baselli, K. Ugurbil, K.L. Miller, and S.M. Smith. ICA-based artefact removal and accelerated fMRI acquisition for improved resting state network imaging. NeuroImage, 95:232-47, 2014",
-  "version": "1.06.15_inc1.9.1",
+  "version": "1.06.15_inc1.9.2",
   "custom": {
     "gear-builder": {
-      "image": "amhe4269/hcp-icafix:1.06.15_inc1.9.1",
+      "image": "amhe4269/hcp-icafix:1.06.15_inc1.9.2",
       "category": "analysis"
     },
       "flywheel": {
@@ -73,6 +73,11 @@
         "minimum": 0,
         "maximum": 9999,
         "description": "Number of dummy volumes to ignore at the beginning of scan. Leave blank if you want to use the non-steady state volumes recorded in mriqc IQMs."
+      },
+      "ProceedOnWarnings": {
+        "type": "boolean",
+        "default": false,
+        "description": "(Default: False) boolean flag to exit on warning, or proceed. Particularly useful when applying hand labeling from project spreadsheet."
       },
       "dry-run": {
           "type":"boolean",

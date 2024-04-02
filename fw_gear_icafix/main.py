@@ -90,6 +90,16 @@ def run(gear_args):
             with open(handlabels_file,'w') as fid:
                 fid.write(" ,".join(handlabels))
 
+            # check if handlabels were found... if not throw warning or error
+            # gear_args.config['ProceedOnWarnings']
+            if handlabels.empty:
+                log.warning("Hand labels not found for %s", os.path.basename(icadir))
+                if gear_args.config['ProceedOnWarnings']:
+                    continue ## skip this loop
+                else:
+                    raise Exception("Unable to proceed. Exiting.")
+                    return 1
+
             # generate new clean dataset
             hpfile = os.path.basename(icadir).replace(".ica", ".nii.gz")
             cmd = "ln -s ../" + hpfile + " " + "filtered_func_data.nii.gz"
@@ -357,10 +367,10 @@ def execute(gear_args):
     command.append(gear_args.icafix["common_command"])
     command = build_command_list(command, gear_args.icafix["params"], include_keys=False)
 
-    stdout_msg = (
-            "hcp_fix logs (stdout, stderr) will be available "
-            + 'in the file "pipeline_logs.zip" upon completion.'
-    )
+    # stdout_msg = (
+    #         "hcp_fix logs (stdout, stderr) will be available "
+    #         + 'in the file "pipeline_logs.zip" upon completion.'
+    # )
     if gear_args.config["dry-run"]:
         log.info("hcp_fix command:\n{command}")
     try:
@@ -368,7 +378,7 @@ def execute(gear_args):
             command,
             dry_run=gear_args.config["dry-run"],
             environ=gear_args.environ,
-            stdout_msg=stdout_msg,
+            stdout_msg=None,
             cont_output=True,
         )
         log.info("\n %s", stdout)
